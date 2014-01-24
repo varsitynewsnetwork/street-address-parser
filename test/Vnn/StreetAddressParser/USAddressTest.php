@@ -121,4 +121,121 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
         $this->assertNotEquals("Ann Arbor, MU 44332", $matches[0], 'Complete address did not match street regexp');
 
     }
+
+    public function testAddress_regexp()
+    {
+        $us = new USAddress();
+
+        // Positive Test Cases (valid addresses)
+        $matches = array();
+        preg_match("/" . $us->address_regexp() . "/ix", "400 W. Dublin-Granville Rd., Worthington, OH 43085", $matches);
+        $this->assertEquals("400 W. Dublin-Granville Rd., Worthington, OH 43085", $matches[0], 'Complete address did not match street regexp');
+
+        $matches = array();
+        preg_match("/" . $us->address_regexp() . "/ix", "7337 Country Club Ln., West Chester, OH", $matches);
+        $this->assertEquals("7337 Country Club Ln., West Chester, OH", $matches[0], 'Complete address did not match street regexp');
+
+        $matches = array();
+        preg_match("/" . $us->address_regexp() . "/ix", "6383 Glenway Ave, Cincinnati, OH 45211", $matches);
+        $this->assertEquals("6383 Glenway Ave, Cincinnati, OH 45211", $matches[0], 'Complete address did not match street regexp');
+
+        $matches = array();
+        preg_match("/" . $us->address_regexp() . "/ix", "600 West North Bend Road, Cincinnati, OH 45224", $matches);
+        $this->assertEquals("600 West North Bend Road, Cincinnati, OH 45224", $matches[0], 'Complete address did not match street regexp');
+
+        // Negative Test Cases (cannot parse data in front of a full address, or address without specific number information)
+        $matches = array();
+        preg_match("/" . $us->address_regexp() . "/ix", "Western Bowl, 6383 Glenway Ave, Cincinnati, OH 45211", $matches);
+        $this->assertNotEquals("Western Bowl, 6383 Glenway Ave, Cincinnati, OH 45211", isset($matches[0]) ? $matches[0] : NULL, 'Complete address did not match street regexp');
+
+        $matches = array();
+        preg_match("/" . $us->address_regexp() . "/ix", "The Meadows Golf Club", $matches);
+        $this->assertNotEquals("The Meadows Golf Club", isset($matches[0]) ? $matches[0] : NULL, 'Complete address did not match street regexp');
+
+        $matches = array();
+        preg_match("/" . $us->address_regexp() . "/ix", "St. Xavier High School, 1609 Poplar Level Rd, Louisville, KY", $matches);
+        $this->assertNotEquals("St. Xavier High School, 1609 Poplar Level Rd, Louisville, KY", isset($matches[0]) ? $matches[0] : NULL, 'Complete address did not match street regexp');
+
+        $matches = array();
+        preg_match("/" . $us->address_regexp() . "/ix", "Glenway Ave, Cincinnati, OH 45211", $matches);
+        $this->assertNotEquals("Glenway Ave, Cincinnati, OH 45211", isset($matches[0]) ? $matches[0] : NULL, 'Complete address did not match street regexp');
+
+    }
+
+    public function testInformal_address_regexp()
+    {
+        $us = new USAddress();
+
+        // Positive Test Cases (valid addresses)
+        $matches = array();
+        preg_match("/" . $us->informal_address_regexp() . "/ix", "400 W. Dublin-Granville Rd., Worthington, OH 43085", $matches);
+        $this->assertEquals("400 W. Dublin-Granville Rd., Worthington, OH 43085", $matches[0], 'Complete address did not match street regexp');
+
+        $matches = array();
+        preg_match("/" . $us->informal_address_regexp() . "/ix", "7337 Country Club Ln., West Chester, OH", $matches);
+        $this->assertEquals("7337 Country Club Ln., West Chester, OH", $matches[0], 'Complete address did not match street regexp');
+
+        $matches = array();
+        preg_match("/" . $us->informal_address_regexp() . "/ix", "600 West North Bend Road, Cincinnati, OH 45224", $matches);
+        $this->assertEquals("600 West North Bend Road, Cincinnati, OH 45224", $matches[0], 'Complete address did not match street regexp');
+
+        $matches = array();
+        preg_match("/" . $us->informal_address_regexp() . "/ix", "600 West North Bend Road, Cincinnati, OH", $matches);
+        $this->assertEquals("600 West North Bend Road, Cincinnati, OH", $matches[0], 'Complete address did not match street regexp');
+
+        // Negative Test Cases (cannot parse data in front of a full address, or an address without specific number information)
+        $matches = array();
+        preg_match("/" . $us->informal_address_regexp() . "/ix", "Glenway Ave, Cincinnati, OH 45211", $matches);
+        $this->assertNotEquals("Glenway Ave, Cincinnati, OH 45211", isset($matches[0]) ? $matches[0] : NULL, 'Complete address did not match street regexp');
+
+        $matches = array();
+        preg_match("/" . $us->informal_address_regexp() . "/ix", "Western Bowl, 6383 Glenway Ave, Cincinnati, OH 45211", $matches);
+        $this->assertNotEquals("Western Bowl, 6383 Glenway Ave, Cincinnati, OH 45211", isset($matches[0]) ? $matches[0] : NULL, 'Complete address did not match street regexp');
+
+        $matches = array();
+        preg_match("/" . $us->informal_address_regexp() . "/ix", "The Meadows Golf Club", $matches);
+        $this->assertNotEquals("The Meadows Golf Club", isset($matches[0]) ? $matches[0] : NULL, 'Complete address did not match street regexp');
+
+        $matches = array();
+        preg_match("/" . $us->informal_address_regexp() . "/ix", "St. Xavier High School, 1609 Poplar Level Rd, Louisville, KY", $matches);
+        $this->assertNotEquals("St. Xavier High School, 1609 Poplar Level Rd, Louisville, KY", isset($matches[0]) ? $matches[0] : NULL, 'Complete address did not match street regexp');
+    }
+
+    public function testParse_intersection()
+    {
+        $us = new USAddress();
+
+        $addr = $us->parse_intersection("Hollywood & Vine, Los Angeles, Ca");
+        $this->assertEquals("Los Angeles", $addr->city, 'City does not match expected for intersection parsing');
+        $this->assertEquals("CA", $addr->state, 'City does not match expected for intersection parsing');
+
+        $addr = $us->parse_intersection("West 51st and 7th, New York, NY 11220");
+        $this->assertEquals("51st", $addr->street, 'City does not match expected for intersection parsing');
+        $this->assertEquals("7th", $addr->street2, 'City does not match expected for intersection parsing');
+        $this->assertEquals("New York", $addr->city, 'City does not match expected for intersection parsing');
+        $this->assertEquals("NY", $addr->state, 'City does not match expected for intersection parsing');
+        $this->assertEquals("11220", $addr->postal_code, 'City does not match expected for intersection parsing');
+    }
+
+    public function testParse()
+    {
+        $us = new USAddress();
+
+        $addr = $us->parse("Hollywood & Vine, Los Angeles, Ca");
+        $this->assertEquals("Los Angeles", $addr->city, 'City does not match expected for intersection parsing');
+        $this->assertEquals("CA", $addr->state, 'City does not match expected for intersection parsing');
+
+        $addr = $us->parse("West 51st and 7th, New York, NY 11220");
+        $this->assertEquals("51st", $addr->street, 'City does not match expected for intersection parsing');
+        $this->assertEquals("7th", $addr->street2, 'City does not match expected for intersection parsing');
+        $this->assertEquals("New York", $addr->city, 'City does not match expected for intersection parsing');
+        $this->assertEquals("NY", $addr->state, 'City does not match expected for intersection parsing');
+        $this->assertEquals("11220", $addr->postal_code, 'City does not match expected for intersection parsing');
+
+        $addr = $us->parse("750 W 26th St  Marion, IN 46953");
+        $this->assertEquals("26th", $addr->street, 'City does not match expected for intersection parsing');
+        $this->assertEquals("Marion", $addr->city, 'City does not match expected for intersection parsing');
+        $this->assertEquals("IN", $addr->state, 'City does not match expected for intersection parsing');
+        $this->assertEquals("46953", $addr->postal_code, 'City does not match expected for intersection parsing');
+    }
 }

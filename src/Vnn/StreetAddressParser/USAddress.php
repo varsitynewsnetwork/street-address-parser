@@ -523,18 +523,6 @@ class USAddress
         $this->FIPS_STATES = array_flip($this->STATE_FIPS);
     }
 
-    /*
-      def parse(location, args = {})
-        if Regexp.new(corner_regexp, Regexp::IGNORECASE).match(location)
-          parse_intersection(location)
-        elsif args[:informal]
-          parse_address(location) || parse_informal_address(location)
-        else
-          parse_address(location);
-        end
-      end
-    */
-
     /**
      * Parse an arbitrary string (formatted as an address or intersection) and returns an instance of
      * Vnn\StreetAddressParser\StreetAddress or NULL if the location cannot be parsed.
@@ -545,8 +533,118 @@ class USAddress
      */
     public function parse($location, $informal = false)
     {
-        return new Vnn\StreetAddressParser\StreetAddress();
+        // 1 == match, 0 == no match, FALSE == error:
+        if (preg_match("/" . $this->corner_regexp() . "/i", $location) == 1) {
+            return $this->parse_intersection($location);
+        } elseif ($informal) {
+            return $this->parse_informal_address($location);
+        } else {
+            return $this->parse_address($location);
+        }
     }
+
+    /**
+     * Parses a location known to be an intersection, and returns an instance of
+     * StreetAddress or NULL if the intersection cannot be parsed.
+     *
+     * Example: Hollywood & Vine, Los Angeles, CA
+     *
+     * @param string $inter
+     * @return \Vnn\StreetAddressParser\StreetAddress $address
+     */
+    public function parse_intersection($inter)
+    {
+        $regex = '\A\W*' . $this->street_regexp() . '\W*?
+          \s+' . $this->corner_regexp() . '\s+' .
+          $this->street_regexp() . '\W+' .
+          $this->place_regexp() . '\W*\Z';
+
+        $matches = array();
+        if (preg_match("/" . $regex . "/ix", $inter, $matches) !== 1)
+            return NULL;
+
+        $addr = new StreetAddress();
+        $addr->street = (isset($matches[4]) && strlen($matches[4]) > 0) ? $matches[4] : $matches[9];
+        $addr->street_type = $matches[5];
+        $addr->suffix = $matches[6];
+        $addr->prefix = $matches[3];
+        $addr->street2 = (isset($matches[15]) && strlen($matches[15]) > 0) ? $matches[15] : $matches[20];
+        $addr->street_type2 = $matches[16];
+        $addr->suffix2 = $matches[17];
+        $addr->prefix2 = $matches[14];
+        $addr->city = $matches[23];
+        $addr->state = isset($matches[24]) ? $matches[24] : "";
+        $addr->postal_code = isset($matches[25]) ? $matches[25] : "";
+
+        $this->normalize_address($addr);
+
+        return $addr;
+    }
+
+    public function parse_address($addr)
+    {
+        $matches = array();
+        if (preg_match("/" . $this->address_regexp() . "/ix", $addr, $matches) !== 1)
+            return NULL;
+
+        $addr = new StreetAddress();
+
+        $addr->number = $matches[1];
+
+        if (isset($matches[5]) && strlen($matches[5]) > 0)
+            $addr->street = $matches[5];
+        elseif (isset($matches[10]) && strlen($matches[10]) > 0)
+            $addr->street = $matches[10];
+        elseif (isset($matches[2]) && strlen($matches[2]) > 0)
+            $addr->street = $matches[2];
+
+        $addr->street_type = (isset($matches[6]) && strlen($matches[6]) > 0) ? $matches[6] : $matches[3];
+        $addr->unit = $matches[14];
+        $addr->unit_prefix = $matches[13];
+        $addr->suffix = (isset($matches[7]) && strlen($matches[7]) > 0) ? $matches[7] : $matches[12];
+        $addr->prefix = $matches[4];
+        $addr->city = isset($matches[15]) ? $matches[15] : "";
+        $addr->state = isset($matches[16]) ? $matches[16] : "";
+        $addr->postal_code = isset($matches[17]) ? $matches[17] : "";
+        $addr->postal_code_ext = isset($matches[18]) ? $matches[18] : "";
+        
+        $this->normalize_address($addr);
+
+        return $addr;
+    }
+
+    public function parse_informal_address()
+    {
+        $matches = array();
+        if (preg_match("/" . $this->informal_address_regexp() . "/ix", $addr, $matches) !== 1)
+            return NULL;
+
+        $addr = new StreetAddress();
+
+        $addr->number = $matches[1];
+
+        if (isset($matches[5]) && strlen($matches[5]) > 0)
+            $addr->street = $matches[5];
+        elseif (isset($matches[10]) && strlen($matches[10]) > 0)
+            $addr->street = $matches[10];
+        elseif (isset($matches[2]) && strlen($matches[2]) > 0)
+            $addr->street = $matches[2];
+
+        $addr->street_type = (isset($matches[6]) && strlen($matches[6]) > 0) ? $matches[6] : $matches[3];
+        $addr->unit = $matches[14];
+        $addr->unit_prefix = $matches[13];
+        $addr->suffix = (isset($matches[7]) && strlen($matches[7]) > 0) ? $matches[7] : $matches[12];
+        $addr->prefix = $matches[4];
+        $addr->city = isset($matches[15]) ? $matches[15] : "";
+        $addr->state = isset($matches[16]) ? $matches[16] : "";
+        $addr->postal_code = isset($matches[17]) ? $matches[17] : "";
+        $addr->postal_code_ext = isset($matches[18]) ? $matches[18] : "";
+        
+        $this->normalize_address($addr);
+
+        return $addr;        
+    }
+
 
     public function street_type_regexp()
     {
@@ -654,63 +752,65 @@ class USAddress
 
     public function address_regexp()
     {
+        return '\A\W*
+                (' . $this->number_regexp() . ')\W*
+                (?:' . $this->fraction_regexp() . '\W*)?' .
+                $this->street_regexp() . '\W+
+                (?:' . $this->unit_regexp() . '\W+)?' .
+                $this->place_regexp() .
+              '\W*\Z';
     }
 
     public function informal_address_regexp()
     {
+        return '\A\s*
+                (' . $this->number_regexp() . ')\W*
+                (?:' . $this->fraction_regexp() . '\W*)?' .
+                $this->street_regexp() . '(?:\W+|\Z)
+                (?:' . $this->unit_regexp() . '(?:\W+|\Z))?' .
+                '(?:' . $this->place_regexp() . ')?';
     }
 
-/*
-    self.address_regexp =
-      '\A\W*
-        (' + number_regexp + ')\W*
-        (?:' + fraction_regexp + '\W*)?' +
-        street_regexp + '\W+
-        (?:' + unit_regexp + '\W+)?' +
-        place_regexp +
-      '\W*\Z'
-
-    self.informal_address_regexp =
-      '\A\s*
-        (' + number_regexp + ')\W*
-        (?:' + fraction_regexp + '\W*)?' +
-        street_regexp + '(?:\W+|\Z)
-        (?:' + unit_regexp + '(?:\W+|\Z))?' +
-        '(?:' + place_regexp + ')?'
-
-*/
-
-/*
-      def parse_intersection(inter)
-        regex = Regexp.new(
-          '\A\W*' + street_regexp + '\W*?
-          \s+' + corner_regexp + '\s+' +
-          street_regexp + '\W+' +
-          place_regexp + '\W*\Z', Regexp::IGNORECASE + Regexp::EXTENDED
-        )
-
-        return unless match = regex.match(inter)
-
-        normalize_address(
-          StreetAddress::US::Address.new(
-            :street => match[4] || match[9],
-            :street_type => match[5],
-            :suffix => match[6],
-            :prefix => match[3],
-            :street2 => match[15] || match[20],
-            :street_type2 => match[16],
-            :suffix2 => match[17],
-            :prefix2 => match[14],
-            :city => match[23],
-            :state => match[24],
-            :postal_code => match[25]
-          )
-        )
-      end
-*/
-    private function parse_intersection()
+    private function normalize_address(StreetAddress $addr)
     {
+        if ($addr->state) $addr->state = $this->normalize_state($addr->state);
+        if ($addr->street_type) $addr->street_type = $this->normalize_street_type($addr->street_type);
+        if ($addr->prefix) $addr->prefix = $this->normalize_directional($addr->prefix);
+        if ($addr->suffix) $addr->suffix = $this->normalize_directional($addr->suffix);
+        if ($addr->street) $addr->street = preg_replace_callback("/\b([a-z])/", function($val){ return ucwords($val); }, $addr->street);
+        if ($addr->street_type2) $addr->street_type2 = $this->normalize_street_type($addr->street_type2);
+        if ($addr->prefix2) $addr->prefix2 = $this->normalize_directional($addr->prefix2);
+        if ($addr->suffix2) $addr->suffix2 = $this->normalize_directional($addr->suffix2);
+        if ($addr->street2) $addr->street2 = preg_replace_callback("/\b([a-z])/", function($val){ return ucwords($val); }, $addr->street2);
+        if ($addr->city) $addr->city = preg_replace_callback("/\b([a-z])/", function($val){ return ucwords($val); }, $addr->city);
+        if ($addr->unit_prefix) $addr->unit_prefix = ucwords($addr->unit_prefix);
+    }
 
+    private function normalize_state($state)
+    {
+        if (strlen($state) < 3) {
+            return strtoupper($state);
+        } else {
+            return $this->STATE_CODES[strtolower($state)];
+        }
+    }
+
+    private function normalize_street_type($street_type)
+    {
+        $street_type = strtolower($street_type);
+        if (isset($this->STREET_TYPES_LIST[$street_type])) {
+            if (isset($this->STREET_TYPES[$street_type]))
+                $street_type = $this->STREET_TYPES[$street_type];
+        }
+        return ucfirst($street_type);
+    }
+
+    private function normalize_directional($dir)
+    {
+        if (strlen($dir) < 3)
+            return strtoupper($dir);
+        else
+            return $this->DIRECTIONAL[strtolower($dir)];
     }
 
 }
