@@ -2,18 +2,13 @@
 
 namespace Vnn\StreetAddressParser;
 
-class USAddress {
-
-    public function __construct() {
-        $this->DIRECTION_CODES = array_flip($this->DIRECTIONAL);
-        foreach($this->STREET_TYPES as $key => $value) {
-            $this->STREET_TYPES_LIST[$key] = true;
-            $this->STREET_TYPES_LIST[$value] = true;
-        }
-        $this->STATE_NAMES = array_flip($this->STATE_CODES);
-        $this->FIPS_STATES = array_flip($this->STATE_FIPS);
-    }
-
+use Vnn\StreetAddressParser\StreetAddress;
+/**
+ * Class USAddress
+ * @package Vnn\StreetAddressParser
+ */
+class USAddress
+{
     private $DIRECTIONAL = array(
         "north" => "N",
         "northeast" => "NE",
@@ -517,50 +512,92 @@ class USAddress {
 
     private $FIPS_STATES = array();
 
-    public function street_type_regexp() {
+    public function __construct()
+    {
+        $this->DIRECTION_CODES = array_flip($this->DIRECTIONAL);
+        foreach ($this->STREET_TYPES as $key => $value) {
+            $this->STREET_TYPES_LIST[$key] = true;
+            $this->STREET_TYPES_LIST[$value] = true;
+        }
+        $this->STATE_NAMES = array_flip($this->STATE_CODES);
+        $this->FIPS_STATES = array_flip($this->STATE_FIPS);
+    }
+
+    /*
+      def parse(location, args = {})
+        if Regexp.new(corner_regexp, Regexp::IGNORECASE).match(location)
+          parse_intersection(location)
+        elsif args[:informal]
+          parse_address(location) || parse_informal_address(location)
+        else
+          parse_address(location);
+        end
+      end
+    */
+
+    /**
+     * Parse an arbitrary string (formatted as an address or intersection) and returns an instance of
+     * Vnn\StreetAddressParser\StreetAddress or NULL if the location cannot be parsed.
+     *
+     * @param  string        $location Address or intersection string
+     * @param  boolean       $informal True make parsing more lenient
+     * @return StreetAddress
+     */
+    public function parse($location, $informal = false)
+    {
+        return new Vnn\StreetAddressParser\StreetAddress();
+    }
+
+    public function street_type_regexp()
+    {
         return implode("|", array_keys($this->STREET_TYPES_LIST));
     }
 
-    public function number_regexp() {
+    public function number_regexp()
+    {
         return '\d+-?\d*';
     }
 
-    public function fraction_regexp() {
+    public function fraction_regexp()
+    {
         return '\d+\/\d+';
     }
 
-    public function state_regexp() {
+    public function state_regexp()
+    {
         return str_replace(
-            " ", 
+            " ",
             "\\s",
-            implode( 
-                "|", 
+            implode(
+                "|",
                 array_merge(
-                    array_keys($this->STATE_CODES), 
+                    array_keys($this->STATE_CODES),
                     array_keys($this->STATE_NAMES)
                 )
             )
         );
     }
 
-    public function city_and_state_regexp() {
+    public function city_and_state_regexp()
+    {
         return '(?:
             ([^\d,]+?)\W+
             (' . $this->state_regexp() . ')
             )';
     }
 
-    public function direct_regexp() {
+    public function direct_regexp()
+    {
         $first_part = implode("|", array_keys($this->DIRECTIONAL)) . "|";
 
         $directional_values = array_values($this->DIRECTIONAL);
-        usort($directional_values, function($a, $b) {
+        usort($directional_values, function ($a, $b) {
             return strlen($b) - strlen($a);
         });
 
         // append "." after all letters to handle abbreviations
         $handle_abbr = array();
-        $callback = function($val) use (&$handle_abbr) {
+        $callback = function ($val) use (&$handle_abbr) {
             $f = preg_replace("/(\w)/", "$1.", $val);
             $handle_abbr[] = preg_quote($f);
             $handle_abbr[] = preg_quote($val);
@@ -571,58 +608,59 @@ class USAddress {
         return $first_part . implode("|", $handle_abbr);
     }
 
-    public function zip_regexp() {
+    public function zip_regexp()
+    {
         return '(\d{5})(?:-?(\d{4})?)';
     }
 
-    public function corner_regexp() {
+    public function corner_regexp()
+    {
         return '(?:\band\b|\bat\b|&|\@)';
     }
 
-    public function unit_regexp() {
+    public function unit_regexp()
+    {
         return '(?:(su?i?te|p\W*[om]\W*b(?:ox)?|dept|apt|apartment|ro*m|fl|unit|box)\W+|\#\W*)([\w-]+)';
     }
 
-    public function street_regexp() {
+    public function street_regexp()
+    {
+        return '(?:
+                  (?:(' . $this->direct_regexp() . ')\W+
+                  (' . $this->street_type_regexp() . ')\b)
+                  |
+                  (?:(' . $this->direct_regexp() . ')\W+)?
+                  (?:
+                    ([^,]+)
+                    (?:[^\w,]+(' . $this->street_type_regexp() . ')\b)
+                    (?:[^\w,]+(' . $this->direct_regexp() . ')\b)?
+                   |
+                    ([^,]*\d)
+                    (' . $this->direct_regexp() . ')\b
+                   |
+                    ([^,]+?)
+                    (?:[^\w,]+(' . $this->street_type_regexp() . ')\b)?
+                    (?:[^\w,]+(' . $this->direct_regexp() . ')\b)?
+                  )
+                )';
+    }
+
+    public function place_regexp()
+    {
+        return '(?:' . $this->city_and_state_regexp() . '\W*)?
+                (?:' . $this->zip_regexp() . ')?';
 
     }
 
-    public function place_regexp() {
-
+    public function address_regexp()
+    {
     }
 
-    public function address_regexp() {
-
-    }
-
-    public function informal_address_regexp() {
-
+    public function informal_address_regexp()
+    {
     }
 
 /*
-    self.street_regexp = 
-      '(?:
-          (?:(' + direct_regexp + ')\W+
-          (' + street_type_regexp + ')\b)
-          |
-          (?:(' + direct_regexp + ')\W+)?
-          (?:
-            ([^,]+)
-            (?:[^\w,]+(' + street_type_regexp + ')\b)
-            (?:[^\w,]+(' + direct_regexp + ')\b)?
-           |
-            ([^,]*\d)
-            (' + direct_regexp + ')\b
-           |
-            ([^,]+?)
-            (?:[^\w,]+(' + street_type_regexp + ')\b)?
-            (?:[^\w,]+(' + direct_regexp + ')\b)?
-          )
-        )'
-    self.place_regexp = 
-      '(?:' + city_and_state_regexp + '\W*)?
-       (?:' + zip_regexp + ')?'
-    
     self.address_regexp =
       '\A\W*
         (' + number_regexp + ')\W*
@@ -631,7 +669,7 @@ class USAddress {
         (?:' + unit_regexp + '\W+)?' +
         place_regexp +
       '\W*\Z'
-      
+
     self.informal_address_regexp =
       '\A\s*
         (' + number_regexp + ')\W*
@@ -640,6 +678,39 @@ class USAddress {
         (?:' + unit_regexp + '(?:\W+|\Z))?' +
         '(?:' + place_regexp + ')?'
 
-*/    
+*/
+
+/*
+      def parse_intersection(inter)
+        regex = Regexp.new(
+          '\A\W*' + street_regexp + '\W*?
+          \s+' + corner_regexp + '\s+' +
+          street_regexp + '\W+' +
+          place_regexp + '\W*\Z', Regexp::IGNORECASE + Regexp::EXTENDED
+        )
+
+        return unless match = regex.match(inter)
+
+        normalize_address(
+          StreetAddress::US::Address.new(
+            :street => match[4] || match[9],
+            :street_type => match[5],
+            :suffix => match[6],
+            :prefix => match[3],
+            :street2 => match[15] || match[20],
+            :street_type2 => match[16],
+            :suffix2 => match[17],
+            :prefix2 => match[14],
+            :city => match[23],
+            :state => match[24],
+            :postal_code => match[25]
+          )
+        )
+      end
+*/
+    private function parse_intersection()
+    {
+
+    }
 
 }
