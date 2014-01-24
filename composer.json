@@ -1,0 +1,17 @@
+{
+    "name": "vnn/vnn-street-address",
+    "license": "VNN",
+    "type": "project",
+    "description": "Varsity News Network Address Parsing Normalization",
+    "require": {
+        "php": "~5.3.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Vnn\\StreetAddressParser": ["src/", "test/"]
+        }
+    }
+}
