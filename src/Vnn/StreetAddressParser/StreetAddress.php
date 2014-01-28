@@ -385,4 +385,14 @@ class StreetAddress
 
         return $this;
     }
+
+    public function getFullAddress1()
+    {
+        return $this->number." ".$this->prefix." ".$this->street." ".$this->street_type." ".$this->suffix;
+    }
+
+    public function getFullAddress2()
+    {
+        return $this->prefix2." ".$this->street2." ".$this->street_type2." ".$this->suffix2;
+    }
 }

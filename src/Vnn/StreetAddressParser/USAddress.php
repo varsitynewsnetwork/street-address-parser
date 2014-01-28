@@ -584,8 +584,10 @@ class USAddress
     public function parse_address($addr)
     {
         $matches = array();
+        
         if (preg_match("/" . $this->address_regexp() . "/ix", $addr, $matches) !== 1)
             return NULL;
+      
 
         $addr = new StreetAddress();
 
@@ -607,9 +609,10 @@ class USAddress
         $addr->state = isset($matches[16]) ? $matches[16] : "";
         $addr->postal_code = isset($matches[17]) ? $matches[17] : "";
         $addr->postal_code_ext = isset($matches[18]) ? $matches[18] : "";
-        
-        $this->normalize_address($addr);
 
+              
+        $this->normalize_address($addr);
+        
         return $addr;
     }
 

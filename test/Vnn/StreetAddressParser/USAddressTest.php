@@ -237,5 +237,18 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Marion", $addr->city, 'City does not match expected for intersection parsing');
         $this->assertEquals("IN", $addr->state, 'City does not match expected for intersection parsing');
         $this->assertEquals("46953", $addr->postal_code, 'City does not match expected for intersection parsing');
+
+        $addr = $us->parse("3200 W Tienken Rd, Rochester, MI");
+        $this->assertEquals("Tienken", $addr->street, 'City does not match expected for intersection parsing');
+        $this->assertEquals("Rochester", $addr->city, 'City does not match expected for intersection parsing');
+        $this->assertEquals("MI", $addr->state, 'City does not match expected for intersection parsing');
+       
+
+    }
+
+    public function testGooglePlacesAddress()
+    {
+        $address = '3200 W Tienken Rd, Rochester, MI, United States';
+
     }
 }
