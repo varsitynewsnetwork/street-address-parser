@@ -4,11 +4,6 @@ namespace Vnn\StreetAddressParser;
 
 class StreetAddress
 {
-    /**
-     * number container
-     *
-     * @var number
-     */
     public $number;
     public $street;
     public $street_type;
@@ -25,280 +20,62 @@ class StreetAddress
     public $suffix2;
     public $prefix2;
 
-
-    /**
-     * Gets the number container.
-     *
-     * @return number
-     */
-    public function getNumber()
+    public function getFullAddress()
     {
-        return $this->number;
+        $ret = $this->getLine1Address();
+        $ret .= !empty($this->city) ? (", " . $this->city) : "";
+        $ret .= !empty($this->state) ? (", " . $this->state) : "";
+        $ret .= !empty($this->postal_code) ? (", " . $this->postal_code) : "";
+
+        if (!$this->is_intersection())
+            $ret .= !empty($this->postal_code_ext) ? ("-" . $this->postal_code_ext) : "";
+
+        return $ret;
     }
 
-    /**
-     * Sets the number container.
-     *
-     * @param number $number the number
-     *
-     * @return self
-     */
-    public function setNumber($number)
+    public function getLine1Address()
     {
-        $this->number = $number;
+        $ret = "";
 
-        return $this;
+        if ($this->is_intersection()){
+            $ret .= !empty($this->prefix) ? ($this->prefix . " ") : "";
+            $ret .= $this->street;
+            $ret .= !empty($this->street_type) ? (" " . $this->street_type) : "";
+            $ret .= !empty($this->suffix) ? (" " . $this->suffix) : "";
+            $ret .= " and";
+
+            $ret .= !empty($this->prefix2) ? (" " . $this->prefix2) : "";
+            $ret .= " " . $this->street2;
+            $ret .= !empty($this->street_type2) ? (" " . $this->street_type2) : "";
+            $ret .= !empty($this->suffix2) ? (" " . $this->suffix2) : "";
+        } else {
+            $ret .= $this->number;
+            $ret .= !empty($this->prefix) ? (" " . $this->prefix) : "";
+            $ret .= !empty($this->street) ? (" " . $this->street) : "";
+            $ret .= !empty($this->street_type) ? (" " . $this->street_type) : "";
+
+            if (!empty($this->unit_prefix) && !empty($this->unit)) {
+                $ret .= " " . $this->unit_prefix;
+                $ret .= " " . $this->unit;
+            } elseif ( empty($this->unit_prefix) && !empty($this->unit)) {
+                $ret .= " " . $this->unit;
+            }
+            $ret .= !empty($this->suffix) ? (" " . $this->suffix) : "";
+        }
+
+        return $ret;
     }
 
-    /**
-     * Gets the value of street.
-     *
-     * @return mixed
-     */
-    public function getStreet()
+    public function getLine2Address()
     {
-        return $this->street;
+        return "";
     }
 
-    /**
-     * Sets the value of street.
-     *
-     * @param mixed $street the street
-     *
-     * @return self
-     */
-    public function setStreet($street)
+    private function is_intersection()
     {
-        $this->street = $street;
-
-        return $this;
+        return !($this->street2 == null);
     }
 
-    /**
-     * Gets the value of street_type.
-     *
-     * @return mixed
-     */
-    public function getStreet_type()
-    {
-        return $this->street_type;
-    }
-
-    /**
-     * Sets the value of street_type.
-     *
-     * @param mixed $street_type the street_type
-     *
-     * @return self
-     */
-    public function setStreet_type($street_type)
-    {
-        $this->street_type = $street_type;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of unit.
-     *
-     * @return mixed
-     */
-    public function getUnit()
-    {
-        return $this->unit;
-    }
-
-    /**
-     * Sets the value of unit.
-     *
-     * @param mixed $unit the unit
-     *
-     * @return self
-     */
-    public function setUnit($unit)
-    {
-        $this->unit = $unit;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of unit_prefix.
-     *
-     * @return mixed
-     */
-    public function getUnit_prefix()
-    {
-        return $this->unit_prefix;
-    }
-
-    /**
-     * Sets the value of unit_prefix.
-     *
-     * @param mixed $unit_prefix the unit_prefix
-     *
-     * @return self
-     */
-    public function setUnit_prefix($unit_prefix)
-    {
-        $this->unit_prefix = $unit_prefix;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of suffix.
-     *
-     * @return mixed
-     */
-    public function getSuffix()
-    {
-        return $this->suffix;
-    }
-
-    /**
-     * Sets the value of suffix.
-     *
-     * @param mixed $suffix the suffix
-     *
-     * @return self
-     */
-    public function setSuffix($suffix)
-    {
-        $this->suffix = $suffix;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of prefix.
-     *
-     * @return mixed
-     */
-    public function getPrefix()
-    {
-        return $this->prefix;
-    }
-
-    /**
-     * Sets the value of prefix.
-     *
-     * @param mixed $prefix the prefix
-     *
-     * @return self
-     */
-    public function setPrefix($prefix)
-    {
-        $this->prefix = $prefix;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of city.
-     *
-     * @return mixed
-     */
-    public function getCity()
-    {
-        return $this->city;
-    }
-
-    /**
-     * Sets the value of city.
-     *
-     * @param mixed $city the city
-     *
-     * @return self
-     */
-    public function setCity($city)
-    {
-        $this->city = $city;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of state.
-     *
-     * @return mixed
-     */
-    public function getState()
-    {
-        return $this->state;
-    }
-
-    /**
-     * Sets the value of state.
-     *
-     * @param mixed $state the state
-     *
-     * @return self
-     */
-    public function setState($state)
-    {
-        $this->state = $state;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of postal_code.
-     *
-     * @return mixed
-     */
-    public function getPostal_code()
-    {
-        return $this->postal_code;
-    }
-
-    /**
-     * Sets the value of postal_code.
-     *
-     * @param mixed $postal_code the postal_code
-     *
-     * @return self
-     */
-    public function setPostal_code($postal_code)
-    {
-        $this->postal_code = $postal_code;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of postal_code_ext.
-     *
-     * @return mixed
-     */
-    public function getPostal_code_ext()
-    {
-        return $this->postal_code_ext;
-    }
-
-    /**
-     * Sets the value of postal_code_ext.
-     *
-     * @param mixed $postal_code_ext the postal_code_ext
-     *
-     * @return self
-     */
-    public function setPostal_code_ext($postal_code_ext)
-    {
-        $this->postal_code_ext = $postal_code_ext;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of street2.
-     *
-     * @return mixed
-     */
-    public function getStreet2()
-    {
-        return $this->street2;
-    }
 
     /**
      * Sets the value of street2.
@@ -395,4 +172,5 @@ class StreetAddress
     {
         return $this->prefix2." ".$this->street2." ".$this->street_type2." ".$this->suffix2;
     }
+
 }

@@ -552,7 +552,7 @@ class USAddress
      * @param string $inter
      * @return \Vnn\StreetAddressParser\StreetAddress $address
      */
-    public function parse_intersection($inter)
+    protected function parse_intersection($inter)
     {
         $regex = '\A\W*' . $this->street_regexp() . '\W*?
           \s+' . $this->corner_regexp() . '\s+' .
@@ -581,7 +581,7 @@ class USAddress
         return $addr;
     }
 
-    public function parse_address($addr)
+    protected function parse_address($addr)
     {
         $matches = array();
         
@@ -616,7 +616,7 @@ class USAddress
         return $addr;
     }
 
-    public function parse_informal_address()
+    protected function parse_informal_address($addr)
     {
         $matches = array();
         if (preg_match("/" . $this->informal_address_regexp() . "/ix", $addr, $matches) !== 1)
@@ -634,9 +634,9 @@ class USAddress
             $addr->street = $matches[2];
 
         $addr->street_type = (isset($matches[6]) && strlen($matches[6]) > 0) ? $matches[6] : $matches[3];
-        $addr->unit = $matches[14];
-        $addr->unit_prefix = $matches[13];
-        $addr->suffix = (isset($matches[7]) && strlen($matches[7]) > 0) ? $matches[7] : $matches[12];
+        $addr->unit = isset($matches[14]) ? $matches[14] : "";
+        $addr->unit_prefix = isset($matches[13]) ? $matches[13] : "";
+        $addr->suffix = (isset($matches[7]) && strlen($matches[7]) > 0) ? $matches[7] : isset($matches[12]) ? $matches[12] : "";
         $addr->prefix = $matches[4];
         $addr->city = isset($matches[15]) ? $matches[15] : "";
         $addr->state = isset($matches[16]) ? $matches[16] : "";
@@ -649,22 +649,22 @@ class USAddress
     }
 
 
-    public function street_type_regexp()
+    protected function street_type_regexp()
     {
         return implode("|", array_keys($this->STREET_TYPES_LIST));
     }
 
-    public function number_regexp()
+    protected function number_regexp()
     {
         return '\d+-?\d*';
     }
 
-    public function fraction_regexp()
+    protected function fraction_regexp()
     {
         return '\d+\/\d+';
     }
 
-    public function state_regexp()
+    protected function state_regexp()
     {
         return str_replace(
             " ",
@@ -679,7 +679,7 @@ class USAddress
         );
     }
 
-    public function city_and_state_regexp()
+    protected function city_and_state_regexp()
     {
         return '(?:
             ([^\d,]+?)\W+
@@ -687,7 +687,7 @@ class USAddress
             )';
     }
 
-    public function direct_regexp()
+    protected function direct_regexp()
     {
         $first_part = implode("|", array_keys($this->DIRECTIONAL)) . "|";
 
@@ -709,22 +709,22 @@ class USAddress
         return $first_part . implode("|", $handle_abbr);
     }
 
-    public function zip_regexp()
+    protected function zip_regexp()
     {
         return '(\d{5})(?:-?(\d{4})?)';
     }
 
-    public function corner_regexp()
+    protected function corner_regexp()
     {
         return '(?:\band\b|\bat\b|&|\@)';
     }
 
-    public function unit_regexp()
+    protected function unit_regexp()
     {
         return '(?:(su?i?te|p\W*[om]\W*b(?:ox)?|dept|apt|apartment|ro*m|fl|unit|box)\W+|\#\W*)([\w-]+)';
     }
 
-    public function street_regexp()
+    protected function street_regexp()
     {
         return '(?:
                   (?:(' . $this->direct_regexp() . ')\W+
@@ -746,14 +746,14 @@ class USAddress
                 )';
     }
 
-    public function place_regexp()
+    protected function place_regexp()
     {
         return '(?:' . $this->city_and_state_regexp() . '\W*)?
                 (?:' . $this->zip_regexp() . ')?';
 
     }
 
-    public function address_regexp()
+    protected function address_regexp()
     {
         return '\A\W*
                 (' . $this->number_regexp() . ')\W*
@@ -764,7 +764,7 @@ class USAddress
               '\W*\Z';
     }
 
-    public function informal_address_regexp()
+    protected function informal_address_regexp()
     {
         return '\A\s*
                 (' . $this->number_regexp() . ')\W*
@@ -780,12 +780,12 @@ class USAddress
         if ($addr->street_type) $addr->street_type = $this->normalize_street_type($addr->street_type);
         if ($addr->prefix) $addr->prefix = $this->normalize_directional($addr->prefix);
         if ($addr->suffix) $addr->suffix = $this->normalize_directional($addr->suffix);
-        if ($addr->street) $addr->street = preg_replace_callback("/\b([a-z])/", function($val){ return ucwords($val); }, $addr->street);
+        if ($addr->street) $addr->street = preg_replace_callback("/\b([a-z])/", function($val){ if(is_array($val)) return ucwords($val[0]); else return ucwords($val); }, $addr->street);
         if ($addr->street_type2) $addr->street_type2 = $this->normalize_street_type($addr->street_type2);
         if ($addr->prefix2) $addr->prefix2 = $this->normalize_directional($addr->prefix2);
         if ($addr->suffix2) $addr->suffix2 = $this->normalize_directional($addr->suffix2);
-        if ($addr->street2) $addr->street2 = preg_replace_callback("/\b([a-z])/", function($val){ return ucwords($val); }, $addr->street2);
-        if ($addr->city) $addr->city = preg_replace_callback("/\b([a-z])/", function($val){ return ucwords($val); }, $addr->city);
+        if ($addr->street2) $addr->street2 = preg_replace_callback("/\b([a-z])/", function($val){ if(is_array($val)) return ucwords($val[0]); else return ucwords($val); }, $addr->street2);
+        if ($addr->city) $addr->city = preg_replace_callback("/\b([a-z])/", function($val){ if(is_array($val)) return ucwords($val[0]); else return ucwords($val); }, $addr->city);
         if ($addr->unit_prefix) $addr->unit_prefix = ucwords($addr->unit_prefix);
     }
 
