@@ -5,6 +5,26 @@ namespace Vnn\StreetAddressParser;
 use Vnn\StreetAddressParser\StreetAddress;
 /**
  * Class USAddress
+ *
+ * Recognized Address Formats
+ *   1600 Pennsylvania Ave Washington DC 20006
+ *   1600 Pennsylvania Ave #400, Washington, DC, 20006
+ *   1600 Pennsylvania Ave Washington, DC
+ *   1600 Pennsylvania Ave #400 Washington DC
+ *   1600 Pennsylvania Ave, 20006
+ *   1600 Pennsylvania Ave #400, 20006
+ *   1600 Pennsylvania Ave 20006
+ *   1600 Pennsylvania Ave #400 20006
+ *
+ * Recognized Intersection Formats
+ *
+ *   Hollywood & Vine, Los Angeles, CA
+ *   Hollywood Blvd and Vine St, Los Angeles, CA
+ *   Mission Street at Valencia Street, San Francisco, CA
+ *   Hollywood & Vine, Los Angeles, CA, 90028
+ *   Hollywood Blvd and Vine St, Los Angeles, CA, 90028
+ *   Mission Street at Valencia Street, San Francisco, CA, 90028
+ *
  * @package Vnn\StreetAddressParser
  */
 class USAddress
@@ -584,10 +604,9 @@ class USAddress
     protected function parse_address($addr)
     {
         $matches = array();
-        
+
         if (preg_match("/" . $this->address_regexp() . "/ix", $addr, $matches) !== 1)
             return NULL;
-      
 
         $addr = new StreetAddress();
 
@@ -610,9 +629,8 @@ class USAddress
         $addr->postal_code = isset($matches[17]) ? $matches[17] : "";
         $addr->postal_code_ext = isset($matches[18]) ? $matches[18] : "";
 
-              
         $this->normalize_address($addr);
-        
+
         return $addr;
     }
 
@@ -642,12 +660,11 @@ class USAddress
         $addr->state = isset($matches[16]) ? $matches[16] : "";
         $addr->postal_code = isset($matches[17]) ? $matches[17] : "";
         $addr->postal_code_ext = isset($matches[18]) ? $matches[18] : "";
-        
+
         $this->normalize_address($addr);
 
-        return $addr;        
+        return $addr;
     }
-
 
     protected function street_type_regexp()
     {
@@ -780,12 +797,12 @@ class USAddress
         if ($addr->street_type) $addr->street_type = $this->normalize_street_type($addr->street_type);
         if ($addr->prefix) $addr->prefix = $this->normalize_directional($addr->prefix);
         if ($addr->suffix) $addr->suffix = $this->normalize_directional($addr->suffix);
-        if ($addr->street) $addr->street = preg_replace_callback("/\b([a-z])/", function($val){ if(is_array($val)) return ucwords($val[0]); else return ucwords($val); }, $addr->street);
+        if ($addr->street) $addr->street = preg_replace_callback("/\b([a-z])/", function ($val) { if(is_array($val)) return ucwords($val[0]); else return ucwords($val); }, $addr->street);
         if ($addr->street_type2) $addr->street_type2 = $this->normalize_street_type($addr->street_type2);
         if ($addr->prefix2) $addr->prefix2 = $this->normalize_directional($addr->prefix2);
         if ($addr->suffix2) $addr->suffix2 = $this->normalize_directional($addr->suffix2);
-        if ($addr->street2) $addr->street2 = preg_replace_callback("/\b([a-z])/", function($val){ if(is_array($val)) return ucwords($val[0]); else return ucwords($val); }, $addr->street2);
-        if ($addr->city) $addr->city = preg_replace_callback("/\b([a-z])/", function($val){ if(is_array($val)) return ucwords($val[0]); else return ucwords($val); }, $addr->city);
+        if ($addr->street2) $addr->street2 = preg_replace_callback("/\b([a-z])/", function ($val) { if(is_array($val)) return ucwords($val[0]); else return ucwords($val); }, $addr->street2);
+        if ($addr->city) $addr->city = preg_replace_callback("/\b([a-z])/", function ($val) { if(is_array($val)) return ucwords($val[0]); else return ucwords($val); }, $addr->city);
         if ($addr->unit_prefix) $addr->unit_prefix = ucwords($addr->unit_prefix);
     }
 

@@ -238,27 +238,19 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("IN", $addr->state, 'City does not match expected for intersection parsing');
         $this->assertEquals("46953", $addr->postal_code, 'City does not match expected for intersection parsing');
 
-<<<<<<< HEAD
-        $addr = $us->parse("3200 W Tienken Rd, Rochester, MI");
-        $this->assertEquals("Tienken", $addr->street, 'City does not match expected for intersection parsing');
-        $this->assertEquals("Rochester", $addr->city, 'City does not match expected for intersection parsing');
-        $this->assertEquals("MI", $addr->state, 'City does not match expected for intersection parsing');
-       
-
-    }
-
-    public function testGooglePlacesAddress()
-    {
-        $address = '3200 W Tienken Rd, Rochester, MI, United States';
-
-=======
-        $addr = $us->parse("1600 Pennsylvania Ave");
-        $this->assertEquals(null,$addr, "Incomplete address should not be parsed unless informal = true");
-
         $addr = $us->parse("1600 Pennsylvania Avenue", true);
         $this->assertEquals("1600",$addr->number, "Street number not parsed even though informal was true");
         $this->assertEquals("Pennsylvania",$addr->street, "Street not parsed even though informal was true");
         $this->assertEquals("Ave",$addr->street_type, "Street type not parsed, and normalized, even though informal was true");
->>>>>>> 9fb5d4553ea938699aa54de6f95e2195c3027a11
+    }
+
+    public function testGooglePlacesAddress()
+    {
+        $us = new USAddressTestClass();
+
+        $addr = $us->parse("3200 W Tienken Rd, Rochester, MI");
+        $this->assertEquals("Tienken", $addr->street, 'City does not match expected for intersection parsing');
+        $this->assertEquals("Rochester", $addr->city, 'City does not match expected for intersection parsing');
+        $this->assertEquals("MI", $addr->state, 'City does not match expected for intersection parsing');
     }
 }

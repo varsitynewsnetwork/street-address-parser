@@ -2,12 +2,12 @@
 
 namespace Vnn\StreetAddressParser;
 
-
 class USAddressTestClass extends USAddress
 {
     private $usaddr;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->usaddr = new USAddress();
     }
 

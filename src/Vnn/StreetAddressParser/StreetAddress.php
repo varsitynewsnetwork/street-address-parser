@@ -20,6 +20,16 @@ class StreetAddress
     public $suffix2;
     public $prefix2;
 
+    /**
+     * Returns the full address from parts composed of the public member variables. Complete addresses
+     * would be returned in the format of:
+     *
+     * {number} {prefix} {street} {street_type} {unit_prefix} {unit} {suffix}, {city}, {state}, {postal_code}-{postal_code_ext}
+     * or, for intersections:
+     * {prefix} {street} {street_type} {suffix} and {prefix2} {street2} {street_type2} {suffix2}, {city}, {state}, {postal_code}
+     *
+     * @return string
+     */
     public function getFullAddress()
     {
         $ret = $this->getLine1Address();
@@ -33,11 +43,21 @@ class StreetAddress
         return $ret;
     }
 
+    /**
+     * Returns the first line of a mailing address from parts composed of the public member variables. String
+     * would be returned in the format of:
+     *
+     * {number} {prefix} {street} {street_type} {unit_prefix} {unit} {suffix}
+     * or, for intersections:
+     * {prefix} {street} {street_type} {suffix} and {prefix2} {street2} {street_type2} {suffix2}
+     *
+     * @return string
+     */
     public function getLine1Address()
     {
         $ret = "";
 
-        if ($this->is_intersection()){
+        if ($this->is_intersection()) {
             $ret .= !empty($this->prefix) ? ($this->prefix . " ") : "";
             $ret .= $this->street;
             $ret .= !empty($this->street_type) ? (" " . $this->street_type) : "";
@@ -66,6 +86,12 @@ class StreetAddress
         return $ret;
     }
 
+    /**
+     * Currently returns nothing, because the parser cannot distinguish between line 1 addresses and other data
+     * such as c/o, P.O. Box, etc. Will be updated as implementation is improved.
+     *
+     * @return string
+     */
     public function getLine2Address()
     {
         return "";
@@ -75,102 +101,4 @@ class StreetAddress
     {
         return !($this->street2 == null);
     }
-
-
-    /**
-     * Sets the value of street2.
-     *
-     * @param mixed $street2 the street2
-     *
-     * @return self
-     */
-    public function setStreet2($street2)
-    {
-        $this->street2 = $street2;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of street_type2.
-     *
-     * @return mixed
-     */
-    public function getStreet_type2()
-    {
-        return $this->street_type2;
-    }
-
-    /**
-     * Sets the value of street_type2.
-     *
-     * @param mixed $street_type2 the street_type2
-     *
-     * @return self
-     */
-    public function setStreet_type2($street_type2)
-    {
-        $this->street_type2 = $street_type2;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of suffix2.
-     *
-     * @return mixed
-     */
-    public function getSuffix2()
-    {
-        return $this->suffix2;
-    }
-
-    /**
-     * Sets the value of suffix2.
-     *
-     * @param mixed $suffix2 the suffix2
-     *
-     * @return self
-     */
-    public function setSuffix2($suffix2)
-    {
-        $this->suffix2 = $suffix2;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of prefix2.
-     *
-     * @return mixed
-     */
-    public function getPrefix2()
-    {
-        return $this->prefix2;
-    }
-
-    /**
-     * Sets the value of prefix2.
-     *
-     * @param mixed $prefix2 the prefix2
-     *
-     * @return self
-     */
-    public function setPrefix2($prefix2)
-    {
-        $this->prefix2 = $prefix2;
-
-        return $this;
-    }
-
-    public function getFullAddress1()
-    {
-        return $this->number." ".$this->prefix." ".$this->street." ".$this->street_type." ".$this->suffix;
-    }
-
-    public function getFullAddress2()
-    {
-        return $this->prefix2." ".$this->street2." ".$this->street_type2." ".$this->suffix2;
-    }
-
 }

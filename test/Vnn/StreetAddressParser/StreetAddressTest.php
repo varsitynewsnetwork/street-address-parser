@@ -46,5 +46,8 @@ class StreetAddressTest extends \PHPUnit_Framework_TestCase
 
         $addr = $us->parse("1 Rockafeller Plz, New York, New York, 10020-2003", true);
         $this->assertEquals("1 Rockafeller Plz, New York, NY, 10020-2003", $addr->getFullAddress(), 'Get Street Address full failure for informal address with zip+4');
+
+        $addr = $us->parse("1600 North Pennsylvania Ave #400, Washington, DC, 20006");
+        $this->assertEquals("1600 N Pennsylvania Ave 400, Washington, DC, 20006", $addr->getFullAddress(), 'Complete full address with prefix, unit, and zip does not match');
     }
 }
