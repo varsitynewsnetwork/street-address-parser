@@ -13,7 +13,7 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
 
     public function testStreet_type_regexp()
     {
-        $us = new USAddress();
+        $us = new USAddressTestClass();
 
         // Positive tests for street types
         $this->assertTrue(1 == preg_match("/" . $us->street_type_regexp() . "/ix", "Street"));
@@ -29,7 +29,7 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
 
     public function testCity_and_state_regexp()
     {
-        $us = new USAddress();
+        $us = new USAddressTestClass();
 
         // Positive tests for city, state
         $this->assertTrue(1 == preg_match("/" . $us->city_and_state_regexp() . "/ix", "Boston, MA"));
@@ -45,7 +45,7 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
 
     public function testDirect_regexp()
     {
-        $us = new USAddress();
+        $us = new USAddressTestClass();
 
         // Positive tests for directions
         $this->assertTrue(1 == preg_match("/" . $us->direct_regexp() . "/ix", "Northeast"));
@@ -59,7 +59,7 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
 
     public function testStreet_regexp()
     {
-        $us = new USAddress();
+        $us = new USAddressTestClass();
 
         $matches = array();
         preg_match("/" . $us->street_regexp() . "/ix", "1600 Pennsylvania Avenue", $matches);
@@ -88,7 +88,7 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
 
     public function testPlace_regexp()
     {
-        $us = new USAddress();
+        $us = new USAddressTestClass();
 
         // Positive Test Cases
         $matches = array();
@@ -124,7 +124,7 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
 
     public function testAddress_regexp()
     {
-        $us = new USAddress();
+        $us = new USAddressTestClass();
 
         // Positive Test Cases (valid addresses)
         $matches = array();
@@ -164,7 +164,7 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
 
     public function testInformal_address_regexp()
     {
-        $us = new USAddress();
+        $us = new USAddressTestClass();
 
         // Positive Test Cases (valid addresses)
         $matches = array();
@@ -203,7 +203,7 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
 
     public function testParse_intersection()
     {
-        $us = new USAddress();
+        $us = new USAddressTestClass();
 
         $addr = $us->parse_intersection("Hollywood & Vine, Los Angeles, Ca");
         $this->assertEquals("Los Angeles", $addr->city, 'City does not match expected for intersection parsing');
@@ -219,13 +219,13 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
 
     public function testParse()
     {
-        $us = new USAddress();
+        $us = new USAddressTestClass();
 
         $addr = $us->parse("Hollywood & Vine, Los Angeles, Ca");
         $this->assertEquals("Los Angeles", $addr->city, 'City does not match expected for intersection parsing');
         $this->assertEquals("CA", $addr->state, 'City does not match expected for intersection parsing');
 
-        $addr = $us->parse("West 51st and 7th, New York, NY 11220");
+        $addr = $us->parse("West 51st and 7th, New York, New York 11220");
         $this->assertEquals("51st", $addr->street, 'City does not match expected for intersection parsing');
         $this->assertEquals("7th", $addr->street2, 'City does not match expected for intersection parsing');
         $this->assertEquals("New York", $addr->city, 'City does not match expected for intersection parsing');
@@ -237,5 +237,13 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Marion", $addr->city, 'City does not match expected for intersection parsing');
         $this->assertEquals("IN", $addr->state, 'City does not match expected for intersection parsing');
         $this->assertEquals("46953", $addr->postal_code, 'City does not match expected for intersection parsing');
+
+        $addr = $us->parse("1600 Pennsylvania Ave");
+        $this->assertEquals(null,$addr, "Incomplete address should not be parsed unless informal = true");
+
+        $addr = $us->parse("1600 Pennsylvania Avenue", true);
+        $this->assertEquals("1600",$addr->number, "Street number not parsed even though informal was true");
+        $this->assertEquals("Pennsylvania",$addr->street, "Street not parsed even though informal was true");
+        $this->assertEquals("Ave",$addr->street_type, "Street type not parsed, and normalized, even though informal was true");
     }
 }
