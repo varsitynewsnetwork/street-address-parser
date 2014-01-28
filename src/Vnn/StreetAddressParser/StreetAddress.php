@@ -66,6 +66,11 @@ class StreetAddress
         return $ret;
     }
 
+    public function getLine2Address()
+    {
+        return "";
+    }
+
     private function is_intersection()
     {
         return !($this->street2 == null);
