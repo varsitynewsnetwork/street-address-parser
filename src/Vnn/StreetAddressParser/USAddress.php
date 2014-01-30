@@ -620,8 +620,8 @@ class USAddress
             $addr->street = $matches[2];
 
         $addr->street_type = (isset($matches[6]) && strlen($matches[6]) > 0) ? $matches[6] : $matches[3];
-        $addr->unit = $matches[14];
-        $addr->unit_prefix = $matches[13];
+        $addr->unit = isset($matches[14]) ? $matches[14] : "";
+        $addr->unit_prefix = isset($matches[13]) ? $matches[13] : "";
         $addr->suffix = (isset($matches[7]) && strlen($matches[7]) > 0) ? $matches[7] : $matches[12];
         $addr->prefix = $matches[4];
         $addr->city = isset($matches[15]) ? $matches[15] : "";
