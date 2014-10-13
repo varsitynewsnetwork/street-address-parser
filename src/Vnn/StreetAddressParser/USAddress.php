@@ -580,7 +580,7 @@ class USAddress
           $this->place_regexp() . '\W*\Z';
 
         $matches = array();
-        if (preg_match("/" . $regex . "/ix", $inter, $matches) !== 1)
+        if (preg_match("/" . $regex . "/ixu", $inter, $matches) !== 1)
             return NULL;
 
         $addr = new StreetAddress();
@@ -605,7 +605,7 @@ class USAddress
     {
         $matches = array();
 
-        if (preg_match("/" . $this->address_regexp() . "/ix", $addr, $matches) !== 1)
+        if (preg_match("/" . $this->address_regexp() . "/ixu", $addr, $matches) !== 1)
             return NULL;
 
         $addr = new StreetAddress();
@@ -637,7 +637,7 @@ class USAddress
     protected function parse_informal_address($addr)
     {
         $matches = array();
-        if (preg_match("/" . $this->informal_address_regexp() . "/ix", $addr, $matches) !== 1)
+        if (preg_match("/" . $this->informal_address_regexp() . "/ixu", $addr, $matches) !== 1)
             return NULL;
 
         $addr = new StreetAddress();
