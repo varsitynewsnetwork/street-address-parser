@@ -2,12 +2,14 @@
 
 namespace Vnn\StreetAddressParser;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * USAddressTest
  *
  * @group group
  */
-class USAddressTest extends \PHPUnit_Framework_TestCase
+class USAddressTest extends TestCase
 {
     // Tests...
 
@@ -252,5 +254,20 @@ class USAddressTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Tienken", $addr->street, 'City does not match expected for intersection parsing');
         $this->assertEquals("Rochester", $addr->city, 'City does not match expected for intersection parsing');
         $this->assertEquals("MI", $addr->state, 'City does not match expected for intersection parsing');
+    }
+
+    public function testCaliforniaAddress()
+    {
+        // inverted street type and street (Camino Capistrano) currently not supported
+        $this->markTestSkipped();
+        $us = new USAddressTestClass();
+
+        $addr = $us->parse("29251 Camino Capistrano, San Juan Capistrano, California, 92675, United States");
+        $this->assertNotNull($addr);
+        $this->assertEquals("29251",$addr->number, "Street number not parsed");
+        $this->assertEquals("Capistrano", $addr->street, 'Street does not match expected');
+        $this->assertEquals("Camino", $addr->street_type, 'Street type does not match expected');
+        $this->assertEquals("San Juan Capistrano", $addr->city, 'City does not match expected');
+        $this->assertEquals("CA", $addr->state, 'City does not match expected');
     }
 }

@@ -2,12 +2,14 @@
 
 namespace Vnn\StreetAddressParser;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * StreetAddressTest
  *
  * @group group
  */
-class StreetAddressTest extends \PHPUnit_Framework_TestCase
+class StreetAddressTest extends TestCase
 {
     // Tests...
     public function testLine1()

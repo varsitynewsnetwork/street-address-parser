@@ -52,6 +52,7 @@ class USAddress
         "arcade" => "arc",
         "av" => "ave",
         "aven" => "ave",
+        "avenida" => "ave",
         "avenu" => "ave",
         "avenue" => "ave",
         "avn" => "ave",
@@ -81,7 +82,10 @@ class USAddress
         "bypas" => "byp",
         "bypass" => "byp",
         "byps" => "byp",
+        "calle" => "cll",
+        "camino" => "cam",
         "camp" => "cp",
+        "caminito" => "cmt",
         "canyn" => "cyn",
         "canyon" => "cyn",
         "cape" => "cpe",
@@ -93,10 +97,12 @@ class USAddress
         "centers" => "ctrs",
         "centr" => "ctr",
         "centre" => "ctr",
+        "cerrada" => "cer",
         "circ" => "cir",
         "circl" => "cir",
         "circle" => "cir",
         "circles" => "cirs",
+        "circulo" => "cir",
         "ck" => "crk",
         "cliff" => "clf",
         "cliffs" => "clfs",
@@ -140,6 +146,7 @@ class USAddress
         "drives" => "drs",
         "drv" => "dr",
         "dvd" => "dv",
+        "entrada" => "ent",
         "estate" => "est",
         "estates" => "ests",
         "exp" => "expy",
@@ -275,6 +282,7 @@ class USAddress
         "parkway" => "pkwy",
         "parkways" => "pkwy",
         "parkwy" => "pkwy",
+        "paseo" => "pso",
         "passage" => "psge",
         "paths" => "path",
         "pikes" => "pike",
@@ -285,6 +293,7 @@ class USAddress
         "pkwys" => "pkwy",
         "pky" => "pkwy",
         "place" => "pl",
+        "placita" => "pla",
         "plain" => "pln",
         "plaines" => "plns",
         "plains" => "plns",
@@ -303,6 +312,7 @@ class USAddress
         "radiel" => "radl",
         "ranch" => "rnch",
         "ranches" => "rnch",
+        "rancho" => "rch",
         "rapid" => "rpd",
         "rapids" => "rpds",
         "rdge" => "rdg",
@@ -388,6 +398,7 @@ class USAddress
         "vdct" => "via",
         "viadct" => "via",
         "viaduct" => "via",
+        "vereda" => "ver",
         "view" => "vw",
         "views" => "vws",
         "vill" => "vlg",
@@ -605,8 +616,9 @@ class USAddress
     {
         $matches = array();
 
-        if (preg_match("/" . $this->address_regexp() . "/ixu", $addr, $matches) !== 1)
+        if (preg_match("/" . $this->address_regexp() . "/ixu", $addr, $matches) !== 1) {
             return NULL;
+        }
 
         $addr = new StreetAddress();
 
@@ -654,7 +666,7 @@ class USAddress
         $addr->street_type = (isset($matches[6]) && strlen($matches[6]) > 0) ? $matches[6] : $matches[3];
         $addr->unit = isset($matches[14]) ? $matches[14] : "";
         $addr->unit_prefix = isset($matches[13]) ? $matches[13] : "";
-        $addr->suffix = (isset($matches[7]) && strlen($matches[7]) > 0) ? $matches[7] : isset($matches[12]) ? $matches[12] : "";
+        $addr->suffix = (isset($matches[7]) && strlen($matches[7]) > 0) ? $matches[7] : (isset($matches[12]) ? $matches[12] : "");
         $addr->prefix = $matches[4];
         $addr->city = isset($matches[15]) ? $matches[15] : "";
         $addr->state = isset($matches[16]) ? $matches[16] : "";
