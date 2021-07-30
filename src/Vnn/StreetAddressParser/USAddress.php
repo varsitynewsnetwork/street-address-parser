@@ -839,6 +839,9 @@ class USAddress
 
     private function normalize_directional($dir)
     {
+        // Handle abbreviations with "." in them
+        $dir = str_replace(['.'], '', $dir);
+
         if (strlen($dir) < 3)
             return strtoupper($dir);
         else
