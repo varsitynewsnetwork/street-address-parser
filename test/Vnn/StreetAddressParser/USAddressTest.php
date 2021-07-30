@@ -256,9 +256,23 @@ class USAddressTest extends TestCase
         $this->assertEquals("MI", $addr->state, 'City does not match expected for intersection parsing');
     }
 
+    public function test_abbreviated_directional()
+    {
+        $us = new USAddressTestClass();
+
+        $addr = $us->parse("5000 S.E. Maricamp Road, Ocala, FL");
+
+        $this->assertEquals("5000",$addr->number, "Street number not parsed");
+        $this->assertEquals("SE",$addr->prefix, "Prefix does not match expected");
+        $this->assertEquals("Maricamp", $addr->street, 'Street does not match expected');
+        $this->assertEquals("Rd", $addr->street_type, 'Street type does not match expected');
+        $this->assertEquals("Ocala", $addr->city, 'City does not match expected');
+        $this->assertEquals("FL", $addr->state, 'City does not match expected');
+    }
+
+    // inverted street type and street (Camino Capistrano) currently not supported
     public function testCaliforniaAddress()
     {
-        // inverted street type and street (Camino Capistrano) currently not supported
         $this->markTestSkipped();
         $us = new USAddressTestClass();
 
